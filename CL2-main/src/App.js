@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import './App.css';
-function App() {
-    const [ads, setAds] = useState([]);
-    const [ipAddress, setIpAddress] = useState('');
-    const [adText, setAdText] = useState('');
 
-    // Функція для отримання IP-адреси
+function App() {
+    const [tasks, setTasks] = useState([]);
+    const [ipAddress, setIpAddress] = useState('');
+    const [taskDescription, setTaskDescription] = useState('');
+
+    // Function to get the user's IP address
     const fetchIpAddress = async () => {
         try {
             const response = await axios.get('https://api.ipify.org?format=json');
@@ -16,61 +17,62 @@ function App() {
         }
     };
 
-    // Функція для отримання всіх оголошень
-    const fetchAds = async () => {
+    // Function to get all tasks
+    const fetchTasks = async () => {
         try {
-            const response = await axios.get('http://54.89.130.1:5000/ads');
-            setAds(response.data);
+            const response = await axios.get('http://54.89.130.1:5000/tasks');
+            setTasks(response.data);
         } catch (error) {
-            console.error("Error fetching ads:", error);
+            console.error("Error fetching tasks:", error);
         }
     };
 
-    // Викликаємо fetchIpAddress та fetchAds при завантаженні компонента
+    // Fetch IP address and tasks on component load
     useEffect(() => {
         fetchIpAddress();
-        fetchAds();
+        fetchTasks();
     }, []);
 
-    // Функція для додавання нового оголошення
-    const handleAddAd = async (e) => {
-        e.preventDefault(); // Запобігаємо перезавантаженню сторінки
+    // Function to add a new task
+    const handleAddTask = async (e) => {
+        e.preventDefault(); // Prevent page reload
 
         try {
-            await axios.post('http://54.89.130.1:5000/ads', {
+            await axios.post('http://54.89.130.1:5000/tasks', {
                 ip_address: ipAddress,
-                ad_text: adText,
+                description: taskDescription,
             });
 
-            // Оновлюємо список оголошень після додавання
-            fetchAds();
+            // Refresh tasks list after adding a new task
+            fetchTasks();
 
-            // Очищаємо поле вводу для тексту оголошення
-            setAdText('');
+            // Clear the input field
+            setTaskDescription('');
         } catch (error) {
-            console.error("Error adding ad:", error);
+            console.error("Error adding task:", error);
         }
     };
 
     return (
-        <div>
-            <h1>Оголошення</h1>
+        <div className="task-planner">
+            <h1>Task Planner</h1>
 
-            <form onSubmit={handleAddAd}>
+            <form onSubmit={handleAddTask} className="task-form">
                 <textarea
-                    placeholder="Текст оголошення"
-                    value={adText}
-                    onChange={(e) => setAdText(e.target.value)}
+                    placeholder="Enter task description"
+                    value={taskDescription}
+                    onChange={(e) => setTaskDescription(e.target.value)}
                     required
+                    className="task-input"
                 />
-                <button type="submit">Додати оголошення</button>
+                <button type="submit" className="add-task-button">Add Task</button>
             </form>
 
-            <h2>Усі оголошення:</h2>
-            <ul>
-                {ads.map(ad => (
-                    <li key={ad.id}>
-                        <strong>{ad.ip_address}</strong>: {ad.ad_text}
+            <h2>Task List:</h2>
+            <ul className="task-list">
+                {tasks.map(task => (
+                    <li key={task.id} className="task-item">
+                        <strong>{task.ip_address}</strong>: {task.description}
                     </li>
                 ))}
             </ul>
